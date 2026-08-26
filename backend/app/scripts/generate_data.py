@@ -7,7 +7,6 @@ from sqlalchemy import text
 
 from app.core.database import engine
 
-
 fake = Faker()
 
 # Reproducible dataset
@@ -562,6 +561,7 @@ def generate_contracts(
             text("SELECT customer_id, customer_segment FROM customers")
         ).all()
     )
+
 
     contracts = []
 
