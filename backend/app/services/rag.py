@@ -1,6 +1,6 @@
-from services.retriever import retrieve
-from services.context import build_context
-from services.llm import chain
+from app.services.retriever import retrieve
+from app.services.context import build_context
+from app.services.llm import chain
 
 
 def ask(question: str,user_role: str,top_k: int = 3):
