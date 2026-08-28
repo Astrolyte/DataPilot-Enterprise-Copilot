@@ -1,0 +1,107 @@
+from sqlalchemy import text
+from app.core.database import engine
+
+def get_user_by_email(email:str):
+    
+    query = text(
+        """
+            SELECT
+                user_id,
+                email,
+                username,
+                password_hash,
+                google_sub,
+                role,
+                is_active
+            FROM users
+            WHERE email = :email
+            LIMIT 1
+        """
+    )
+    
+    with engine.connect() as connection:
+        
+        row = (connection.execute(
+            query,
+            {
+                "email":email,
+            }
+        ).mappings().first())
+        
+        return dict(row) if row else None
+    
+def get_user_by_google_sub(google_sub: str):
+
+    query = text(
+        """
+        SELECT
+            user_id,
+            email,
+            username,
+            password_hash,
+            google_sub,
+            role,
+            is_active
+        FROM users
+        WHERE google_sub = :google_sub
+        LIMIT 1
+        """
+    )
+
+    with engine.connect() as connection:
+
+        row = (
+            connection.execute(
+                query,
+                {
+                    "google_sub": google_sub,
+                },
+            ).mappings().first()
+        )
+
+    return dict(row) if row else None
+
+def create_user(email: str,username: str,password_hash: str | None = None,google_sub: str | None = None,role: str = "sales",):
+
+    query = text(
+        """
+        INSERT INTO users (
+            email,
+            username,
+            password_hash,
+            google_sub,
+            role
+        )
+        VALUES (
+            :email,
+            :username,
+            :password_hash,
+            :google_sub,
+            :role
+        )
+        RETURNING
+            user_id,
+            email,
+            username,
+            role
+        """
+    )
+
+    with engine.begin() as connection:
+
+        row = (
+            connection.execute(
+                query,
+                {
+                    "email": email,
+                    "username": username,
+                    "password_hash": password_hash,
+                    "google_sub": google_sub,
+                    "role": role,
+                },
+            )
+            .mappings()
+            .first()
+        )
+
+    return dict(row)
