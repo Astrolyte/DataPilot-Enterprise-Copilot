@@ -9,6 +9,7 @@ venv/
 
 # Environment
 .env
+*.env
 
 # IDE
 .vscode/
@@ -26,5 +27,6 @@ backend/test_connection.py
 
 #folders
 backend/app/data/
+frontend/node_modules
 
-
+*.json
