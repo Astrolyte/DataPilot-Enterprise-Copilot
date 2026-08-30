@@ -462,9 +462,7 @@ Response structure:
   "route": "SQL",
   "answer": null,
   "sql": "SELECT ...",
-  "rows": [
-    { "company_name": "Acme Corp", "total_revenue": 125000 }
-  ],
+  "rows": [{ "company_name": "Acme Corp", "total_revenue": 125000 }],
   "sources": null
 }
 ```
