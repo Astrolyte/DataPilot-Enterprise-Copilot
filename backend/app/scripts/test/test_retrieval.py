@@ -40,4 +40,4 @@ def search(query: str, top_k: int = 5):
 
 if __name__ == "__main__":
 
-    search("What were our highest-value customers last quarter?")
+    search("What is the refund policy?")

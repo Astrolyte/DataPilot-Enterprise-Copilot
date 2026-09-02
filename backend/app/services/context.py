@@ -10,8 +10,7 @@ SOURCE {index}
 Document ID: {result["document_id"]}
 Source File: {result["source_file"]}
 
-Content:
-{result["chunk_text"]}
+Content:{result["chunk_text"]}
 """
         )
 

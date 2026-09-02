@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 
-from services.rag import ask
+from app.services.rag import ask
 
 
 EVAL_FILE = Path(
-    "data/evaluation/rag_questions.json"
+    "app/data/evaluation/rag_questions.json"
 )
 
 

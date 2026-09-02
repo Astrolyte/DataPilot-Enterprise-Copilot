@@ -32,13 +32,6 @@ CREATE TABLE orders (
     total_amount NUMERIC(12,2) NOT NULL
 );
 
-CREATE INDEX idx_orders_customer_id
-ON orders(customer_id);
-
-CREATE INDEX idx_orders_order_date
-ON orders(order_date);
-
-
 CREATE TABLE order_items (
     order_item_id SERIAL PRIMARY KEY,
     order_id INT NOT NULL REFERENCES orders(order_id),
@@ -46,12 +39,6 @@ CREATE TABLE order_items (
     quantity INT NOT NULL,
     unit_price NUMERIC(10,2) NOT NULL
 );
-
-CREATE INDEX idx_order_items_order_id
-ON order_items(order_id);
-
-CREATE INDEX idx_order_items_product_id
-ON order_items(product_id);
 
 
 CREATE TABLE transactions (
@@ -63,13 +50,6 @@ CREATE TABLE transactions (
     status VARCHAR(50)
 );
 
-CREATE INDEX idx_transactions_customer_id
-ON transactions(customer_id);
-
-CREATE INDEX idx_transactions_date
-ON transactions(transaction_date);
-
-
 CREATE TABLE customer_contracts (
     contract_id SERIAL PRIMARY KEY,
     customer_id INT NOT NULL REFERENCES customers(customer_id),
@@ -79,13 +59,6 @@ CREATE TABLE customer_contracts (
     signed_date DATE,
     annual_value NUMERIC(12,2)
 );
-
-CREATE INDEX idx_contracts_customer_id
-ON customer_contracts(customer_id);
-
-CREATE INDEX idx_contracts_document_id
-ON customer_contracts(document_id);
-
 
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
