@@ -64,11 +64,10 @@ def query(request: Request, query_request: QueryRequest, current_user: dict = De
                 role=current_user["role"],
                 query_text=query_request.question,
                 route="HYBRID",
-                tables_used=[
-                    "customers",
-                    "customer_contracts",
-                    "orders",
-                ],
+                tables_used=data.get(
+                    "tables_used",
+                    ["customers", "customer_contracts"],
+                ),
                 sources_used=[
                     document_id
                 ],
@@ -79,6 +78,8 @@ def query(request: Request, query_request: QueryRequest, current_user: dict = De
             return QueryResponse(
                 route="HYBRID",
                 answer=data["answer"],
+                sql=data.get("sql"),
+                rows=data.get("rows"),
                 sources=[{
                     "document_id": data["document_id"],
                     "type": contract_type,

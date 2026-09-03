@@ -41,10 +41,12 @@ def main():
         f"{result['document_id']}"
     )
 
-    print(
-        f"Completed revenue: "
-        f"{result['revenue']['completed_revenue']}"
-    )
+    print("\nStructured SQL:")
+    print(result["sql"])
+
+    print("\nStructured results:")
+    for row in result["rows"]:
+        print(row)
 
 
 if __name__ == "__main__":

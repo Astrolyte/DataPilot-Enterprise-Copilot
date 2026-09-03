@@ -1,8 +1,11 @@
+import sqlglot
+from sqlglot import exp
 from sqlalchemy import text
 
 from app.core.database import engine
 
 from app.services.hybrid_answer import generate_hybrid_answer
+from app.services.sql import ask_sql
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import (Filter,FieldCondition,MatchValue,)
@@ -80,36 +83,6 @@ def get_customer_contract(customer_id: int):
     return dict(row)
 
 
-def get_customer_revenue(customer_id: int):
-    """
-    Calculate completed revenue for a customer.
-    """
-
-    query = text(
-        """
-        SELECT
-            COALESCE(
-                SUM(total_amount),
-                0
-            ) AS completed_revenue
-        FROM orders
-        WHERE customer_id = :customer_id
-          AND status = 'completed'
-        """
-    )
-
-    with engine.connect() as connection:
-
-        row = connection.execute(
-            query,
-            {
-                "customer_id": customer_id,
-            },
-        ).mappings().first()
-
-    return dict(row)
-
-
 def get_contract_document(document_id: str):
     """
     Retrieve the exact contract document from Qdrant
@@ -150,6 +123,16 @@ def get_contract_document(document_id: str):
     ]
 
 
+def _tables_in_sql(sql: str) -> list[str]:
+    """Return the tables referenced by a validated SQL query."""
+    tables = []
+    for table in sqlglot.parse_one(sql, read="postgres").find_all(exp.Table):
+        table_name = table.name.lower()
+        if table_name not in tables:
+            tables.append(table_name)
+    return tables
+
+
 def ask_hybrid(
     company_name: str,
     question: str,
@@ -158,9 +141,8 @@ def ask_hybrid(
     Execute a hybrid query using:
 
     PostgreSQL:
-        - customer lookup
-        - contract metadata
-        - completed revenue
+        - the existing Text-to-SQL pipeline for structured facts
+        - customer lookup and contract metadata for document resolution
 
     Qdrant:
         - exact contract document
@@ -199,12 +181,11 @@ def ask_hybrid(
         )
 
     # --------------------------------------------------
-    # 3. Get completed revenue
+    # 3. Run the structured part through the same guarded SQL pipeline
+    #    used by normal SQL queries. This keeps retrieval driven by the
+    #    question instead of always fetching revenue.
     # --------------------------------------------------
-
-    revenue = get_customer_revenue(
-        customer_id
-    )
+    sql_result = ask_sql(question)
 
     # --------------------------------------------------
     # 4. Retrieve exact contract document
@@ -236,16 +217,25 @@ def ask_hybrid(
         database_results={
             "customer": customer,
             "contract": contract,
-            "revenue": revenue,
+            "sql": sql_result["sql"],
+            "rows": sql_result["rows"],
         },
         document_context=document_context,
     )
+
+    tables_used = ["customers", "customer_contracts"]
+    for table in _tables_in_sql(sql_result["sql"]):
+        if table not in tables_used:
+            tables_used.append(table)
 
     return {
         "answer": answer,
         "customer": customer,
         "contract": contract,
-        "revenue": revenue,
+        "sql": sql_result["sql"],
+        "rows": sql_result["rows"],
+        "attempts": sql_result["attempts"],
+        "tables_used": tables_used,
         "document_id": contract["document_id"],
         "document_context": document_context,
     }
